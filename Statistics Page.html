@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques des Commandes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+   
+    <script src="deconnexion.js"></script>
+    <style>
+        /* Reset de base */
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+h1 {
+    color: white;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #6366f1;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.navigation {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filters h2, .stats-summary h2, .products-stats h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-wrapper i {
+    font-size: 18px;
+}
+
+input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    background-color: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filter-btn:hover {
+    background-color: #5254d4;
+}
+
+.stats-container {
+    display: flex;
+    gap: 20px;
+}
+
+.stats-summary, .products-stats {
+    flex: 1;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: bold;
+}
+
+.stat-value {
+    color: #6366f1;
+}
+
+.stats-table-container {
+    overflow-x: auto;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.stats-table th, .stats-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.stats-table th {
+    background-color: #f4f4f9;
+    font-weight: bold;
+}
+
+.stats-table tbody tr:hover {
+    background-color: #f9f9f9;
+}
+
+.no-data {
+    text-align: center;
+    color: #888;
+    padding: 20px;
+}
+
+.logout-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.logout-btn i {
+    font-size: 1.1rem;
+}
+
+/* Toast Notifications */
+.toast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 14px;
+}
+
+.toast.show {
+    visibility: visible;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+.toast.error {
+    background-color: #ff4444;
+}
+
+.toast.success {
+    background-color: #6366f1;
+}
+
+@keyframes fadein {
+    from {bottom: 0; opacity: 0;}
+    to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+    from {bottom: 30px; opacity: 1;}
+    to {bottom: 0; opacity: 0;}
+}
+
+/* Responsive Design */
+
+/* Tablettes */
+@media (max-width: 1024px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .navigation {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .stats-container {
+        flex-direction: column;
+    }
+
+    .stats-summary, .products-stats {
+        width: 100%;
+    }
+
+    .date-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Smartphones */
+@media (max-width: 768px) {
+    .header {
+        padding: 15px;
+    }
+
+    .header h1 {
+        font-size: 20px;
+    }
+
+    .navigation {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .nav-link {
+        font-size: 14px;
+    }
+
+    .main-content {
+        gap: 15px;
+    }
+
+    .stats-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .stat-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filters h2, .stats-summary h2, .products-stats h2 {
+        font-size: 18px;
+    }
+
+    .stats-table th, .stats-table td {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .filter-btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-chart-bar"></i> Statistiques des Produits</h1>
+            <nav class="navigation">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Accueil
+                </a>
+                <a href="Search Order Page.html" class="nav-link">
+                    <i class="fas fa-search"></i> Recherche
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content stats-page">
+            <div class="filters card">
+                <h2><i class="fas fa-filter"></i> Filtres</h2>
+                <div class="date-filters">
+                    <div class="input-wrapper">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="dateDebut">
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="fas fa-calendar"></i>
+                        <input type="date" id="dateFin">
+                    </div>
+                    <button class="btn filter-btn">
+                        <i class="fas fa-sync"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stats-summary card">
+                    <h2><i class="fas fa-chart-pie"></i> Résumé</h2>
+                    <div id="totalStats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Commandes</span>
+                            <span class="stat-value" id="totalCommandes">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Chiffre d'Affaires</span>
+                            <span class="stat-value" id="chiffreAffaires">0 DT</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="products-stats card">
+                    <h2><i class="fas fa-box"></i> Statistiques par Produit</h2>
+                    <div id="productsStats" class="stats-table-container">
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité Vendue</th>
+                                    <th>Total Ventes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statsTableBody">
+                                <!-- Données générées par JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+</body>
+<script>
+    // Fonction pour vérifier la validité du token
+function isTokenValid() {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+        // Récupérer la date d'expiration du token
+        const tokenExpiry = localStorage.getItem('tokenExpiry');
+        if (!tokenExpiry) return false;
+
+        // Vérifier si le token a expiré
+        const now = new Date().getTime();
+        if (now > parseInt(tokenExpiry)) {
+            // Si le token a expiré, le supprimer
+            localStorage.removeItem('token');
+            localStorage.removeItem('tokenExpiry');
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la vérification du token:', error);
+        return false;
+    }
+}
+    // Éléments DOM
+const dateDebut = document.getElementById('dateDebut');
+const dateFin = document.getElementById('dateFin');
+const filterBtn = document.querySelector('.filter-btn');
+const totalCommandesElement = document.getElementById('totalCommandes');
+const chiffreAffairesElement = document.getElementById('chiffreAffaires');
+const statsTableBody = document.getElementById('statsTableBody');
+
+// Initialiser la page avec la date du jour pour la fin et un mois avant pour le début
+document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    
+    dateDebut.value = formatDate(firstDay);
+    dateFin.value = formatDate(today);
+    
+    fetchStatistics(); // Charger les statistiques initiales
+});
+
+// Événement pour actualiser les statistiques
+filterBtn.addEventListener('click', fetchStatistics);
+
+// Fonction pour formater la date en YYYY-MM-DD
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Fonction pour récupérer les statistiques
+async function fetchStatistics() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showToast('Vous devez être connecté pour accéder aux statistiques', 'error');
+            return;
+        }
+
+        const debut = dateDebut.value;
+        const fin = dateFin.value;
+
+        if (!debut || !fin) {
+            showToast('Veuillez sélectionner une période', 'error');
+            return;
+        }
+
+        // Construire l'URL avec les paramètres de date
+        const url = `http://localhost:3000/statistiques?debut=${debut}&fin=${fin}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des statistiques');
+        }
+
+        const data = await response.json();
+        displayStatistics(data);
+    } catch (error) {
+        console.error('Erreur:', error);
+        showToast(error.message || 'Erreur lors de la récupération des statistiques', 'error');
+    }
+}
+
+// Fonction pour afficher les statistiques
+function displayStatistics(data) {
+    // Afficher les totaux
+    totalCommandesElement.textContent = data.totalCommandes || 0;
+    chiffreAffairesElement.textContent = `${parseFloat(data.chiffreAffaires || 0).toFixed(2)} DT`;
+
+    // Afficher les statistiques par produit
+    if (data.produitsStats && data.produitsStats.length > 0) {
+        const tableRows = data.produitsStats.map(produit => `
+            <tr>
+                <td>${produit.nom}</td>
+                <td>${produit.quantiteVendue}</td>
+                <td>${parseFloat(produit.totalVentes).toFixed(2)} DT</td>
+            </tr>
+        `).join('');
+        
+        statsTableBody.innerHTML = tableRows;
+    } else {
+        statsTableBody.innerHTML = `
+            <tr>
+                <td colspan="3" class="no-data">Aucune donnée disponible pour cette période</td>
+            </tr>
+        `;
+    }
+}
+
+// Toast notification
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast show ${type}`;
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 3000);
+}
+</script>
+</html>

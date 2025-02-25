@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Pâtisserie Abdellatif</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-cookie-bite"></i> Pâtisserie Abdellatif</h1>
+        </header>
+
+        <main class="main-content">
+            <div class="login-card card">
+                <h2><i class="fas fa-lock"></i> Connexion</h2>
+                <form id="loginForm" class="login-form">
+                    <div class="input-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="fas fa-key"></i>
+                            <input type="password" id="password" placeholder="Mot de passe" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn login-btn">
+                        <i class="fas fa-sign-in-alt"></i> Se Connecter
+                    </button>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <style>
+        .main-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 200px);
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem auto;
+        }
+        .login-form {
+            margin-top: 2rem;
+        }
+        .login-btn {
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+        }
+        .login-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <script src="login.js"></script>
+    
+</body>
+</html>

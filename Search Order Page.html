@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche Commandes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="deconnexion.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-search"></i> Recherche des Commandes</h1>
+            <nav class="navigation">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Accueil
+                </a>
+                <a href="ajoutercommande.html" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Ajouter une commande
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content search-page">
+            <div class="search-container card">
+                <div class="search-controls">
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="searchNom" placeholder="Rechercher par nom...">
+                    </div>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="searchTel" placeholder="Rechercher par téléphone...">
+                    </div>
+                    <button class="btn search-btn">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
+                </div>
+            </div>
+
+            <div class="results-container card">
+                <h2><i class="fas fa-list"></i> Résultats de la recherche</h2>
+                <div id="searchResults">
+                    <p class="empty-message">Utilisez les champs ci-dessus pour rechercher une commande</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Fonction pour vérifier la validité du token
+function isTokenValid() {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+
+    try {
+        // Récupérer la date d'expiration du token
+        const tokenExpiry = localStorage.getItem('tokenExpiry');
+        if (!tokenExpiry) return false;
+
+        // Vérifier si le token a expiré
+        const now = new Date().getTime();
+        if (now > parseInt(tokenExpiry)) {
+            // Si le token a expiré, le supprimer
+            localStorage.removeItem('token');
+            localStorage.removeItem('tokenExpiry');
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la vérification du token:', error);
+        return false;
+    }
+}
+        // DOM Elements
+        const searchNom = document.getElementById("searchNom");
+        const searchTel = document.getElementById("searchTel");
+        const searchResults = document.getElementById("searchResults");
+        const searchBtn = document.querySelector(".search-btn");
+
+        // Fonction de recherche
+        async function rechercherCommandes() {
+            const nom = searchNom.value.trim();
+            const tel = searchTel.value.trim();
+
+            if (!nom && !tel) {
+                showToast("Veuillez saisir au moins un critère de recherche", "error");
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    showToast("Vous devez être connecté pour effectuer cette action", "error");
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:3000/commandes?nom=${nom}&telephone=${tel}`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erreur lors de la recherche");
+                }
+
+                const data = await response.json();
+                afficherResultats(data);
+            } catch (error) {
+                console.error("Erreur:", error);
+                showToast(error.message || "Erreur lors de la recherche", "error");
+            }
+        }
+
+        // Afficher les résultats
+        // Inside the afficherResultats function, modify this line in the order-products section:
+
+        function afficherResultats(resultats) {
+    if (resultats.length === 0) {
+        searchResults.innerHTML = `<p class="empty-message">Aucune commande trouvée</p>`;
+        return;
+    }
+
+    searchResults.innerHTML = resultats.map(commande => {
+        // Calculer le reste à payer (si account est défini)
+        const accountValue = commande.account ? parseFloat(commande.account) : 0;
+        const totalValue = parseFloat(commande.total);
+        const restValue = totalValue - accountValue;
+        
+        return `
+        <div class="order-card">
+            <div class="order-header">
+                <div>
+                    <strong>${commande.client.nom}</strong>
+                    <div>${commande.client.telephone}</div>
+                </div>
+                <div>
+                    <div>Commande #${commande.id}</div>
+                    <div>${commande.date}</div>
+                </div>
+            </div>
+            <div class="order-products">
+                <h3>Produits :</h3>
+                <ul>
+                    ${commande.produits.map(produit => `
+                        <li>
+                            ${produit.nom} - 
+                            Quantité: ${produit.quantite} - 
+                            Prix unitaire: ${parseFloat(produit.prix).toFixed(2)} DT
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+            <div class="order-financials">
+                <div class="order-total">
+                    Total: <strong>${parseFloat(commande.total).toFixed(2)} DT</strong>
+                </div>
+                <div class="order-payment">
+                    <div class="account">
+                        Avance: <strong>${commande.account ? parseFloat(commande.account).toFixed(2) : '0.00'} DT</strong>
+                    </div>
+                    <div class="rest">
+                        Reste à payer: <strong>${restValue.toFixed(2)} DT</strong>
+                    </div>
+                </div>
+                ${commande.note ? `<div class="order-note">Note: ${commande.note}</div>` : ''}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+        // Event Listeners
+        searchBtn.addEventListener("click", rechercherCommandes);
+        searchNom.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") rechercherCommandes();
+        });
+        searchTel.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") rechercherCommandes();
+        });
+
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => {
+                toast.className = 'toast';
+            }, 3000);
+        }
+    </script>
+    <style>
+        .order-financials {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.order-payment {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+.order-note {
+    margin-top: 10px;
+    font-style: italic;
+    color: #666;
+}
+
+.rest strong {
+    color: #d9534f;
+}
+
+.account strong {
+    color: #5cb85c;
+}
+    </style>
+</body>
+</html>
